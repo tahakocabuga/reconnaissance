@@ -51,5 +51,5 @@ backend/*.docstates
 frontend/.next/
 frontend/node_modules/
 
-# Global Node modules (if applicable)
-node_modules/
+# Global Node modules
+node_modules

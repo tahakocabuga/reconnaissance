@@ -47,8 +47,8 @@ public async Task<IActionResult> StartScan([FromBody] string url)
     {
         StartInfo = new ProcessStartInfo
         {
-            FileName = "katana",
-            Arguments = $"-u {url}",
+            FileName = "docker",
+            Arguments = $"run --rm projectdiscovery/katana -u {url}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -60,8 +60,8 @@ public async Task<IActionResult> StartScan([FromBody] string url)
     {
         StartInfo = new ProcessStartInfo
         {
-            FileName = "naabu",
-            Arguments = $"-host {host}",
+            FileName = "docker",
+            Arguments = $"run --rm projectdiscovery/naabu -host {host}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
