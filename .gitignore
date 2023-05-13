@@ -46,6 +46,7 @@ backend/*.resharper.user
 backend/_ReSharper*/
 backend/_TeamCity*
 backend/*.docstates
+backend/FinalRecon/
 
 # Next.js Frontend
 frontend/.next/
