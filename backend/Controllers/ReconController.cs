@@ -15,12 +15,14 @@ namespace ReconAPI.Controllers
         [HttpPost("scan")]
 public async Task<IActionResult> StartScan([FromBody] string url)
 {
+    Uri uri = new Uri(url);
+    string host = uri.Host;
     var finalReconProcess = new Process
     {
         StartInfo = new ProcessStartInfo
         {
-            FileName = "python3",
-            Arguments = $"FinalRecon/finalrecon.py --full {url}",
+            FileName = "docker",
+            Arguments = $"run --rm finalrecon --full {url}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -32,8 +34,8 @@ public async Task<IActionResult> StartScan([FromBody] string url)
     {
         StartInfo = new ProcessStartInfo
         {
-            FileName = "subfinder",
-            Arguments = $"-d {url}",
+            FileName = "docker",
+            Arguments = $"run --rm projectdiscovery/subfinder:latest -d {url}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -42,30 +44,30 @@ public async Task<IActionResult> StartScan([FromBody] string url)
     };
     
     var katanaProcess = new Process
-{
-    StartInfo = new ProcessStartInfo
     {
-        FileName = "katana",
-        Arguments = $"-u {url}",
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-        CreateNoWindow = true,
-    }
-};
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = "katana",
+            Arguments = $"-u {url}",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        }
+    };
 
-var naabuProcess = new Process
-{
-    StartInfo = new ProcessStartInfo
+    var naabuProcess = new Process
     {
-        FileName = "naabu",
-        Arguments = $"-host {url}",
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-        CreateNoWindow = true,
-    }
-};
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = "naabu",
+            Arguments = $"-host {host}",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        }
+    };
 
     var finalReconTask = RunTool(finalReconProcess, url);
     var subFinderTask = RunTool(subFinderProcess, url);
@@ -77,8 +79,6 @@ var naabuProcess = new Process
     var subFinderResult = await subFinderTask;
     var katanaResult = await katanaTask;
     var naabuResult = await naabuTask;
-
-
 
     var mergedSubdomains = new HashSet<string>(finalReconResult.Subdomains);
     mergedSubdomains.UnionWith(subFinderResult.Subdomains);
@@ -93,6 +93,7 @@ var naabuProcess = new Process
 
     return Ok(reconResult);
 }
+
 
 
         private async Task<ReconResult> RunTool(Process process, string targetDomain)
@@ -178,7 +179,7 @@ var naabuProcess = new Process
             return reconResult;
         }
 
-        private string ExtractValue(string output, string regexPattern)
+        private string? ExtractValue(string output, string regexPattern)
         {
             var match = Regex.Match(output, regexPattern);
             return match.Success ? match.Groups[1].Value : null;
